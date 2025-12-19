@@ -9,7 +9,7 @@ fn char_to_nibble(c: u8) -> Result<u8> {
     }
 }
 
-pub fn hex_to_bin(hex: &str) -> Result<Vec<u8>> {
+pub fn decode(hex: &str) -> Result<Vec<u8>> {
     let hex = hex.as_bytes();
     anyhow::ensure!(hex.len() % 2 == 0);
     hex.chunks_exact(2).into_iter().map(|v| {
@@ -28,7 +28,7 @@ pub fn nibble_to_char(c: u8) -> u8 {
     }
 }
 
-pub fn bin_to_hex(bin: &[u8]) -> String {
+pub fn encode(bin: &[u8]) -> String {
     let bytes = bin.into_iter().flat_map(|b| {
         [nibble_to_char(*b >> 4), nibble_to_char(*b)]
     }).collect::<Vec<u8>>();
@@ -42,24 +42,24 @@ mod tests {
     #[test]
     fn test_hex() {
         let input = "0123456789abcdef";
-        let v1 = hex_to_bin(input).unwrap();
+        let v1 = decode(input).unwrap();
         assert!(v1 == vec!(0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef));
-        assert!(input == bin_to_hex(&v1));
+        assert!(input == encode(&v1));
     }
 
     #[test]
     fn test_upper_hex() {
         let input = "0123456789ABCDEF";
-        let v1 = hex_to_bin(input).unwrap();
+        let v1 = decode(input).unwrap();
         assert!(v1 == vec!(0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef));
     }
 
     #[test]
     fn test_errors() {
-        assert!(hex_to_bin("0ab").is_err());
-        assert!(hex_to_bin("0g").is_err());
-        assert!(hex_to_bin("0-").is_err());
-        assert!(hex_to_bin("0^").is_err());
-        assert!(hex_to_bin("\0\0").is_err());
+        assert!(decode("0ab").is_err());
+        assert!(decode("0g").is_err());
+        assert!(decode("0-").is_err());
+        assert!(decode("0^").is_err());
+        assert!(decode("\0\0").is_err());
     }
 }

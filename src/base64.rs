@@ -23,7 +23,7 @@ fn decode_char(c: u8) -> Result<u8> {
     }
 }
 
-pub fn base64_to_bin(base64: &str) -> Result<Vec<u8>> {
+pub fn decode(base64: &str) -> Result<Vec<u8>> {
     let mut base64 = base64.as_bytes();
     // Trim up to 3 `=`s from the string.
     for _ in 0..3 {
@@ -64,7 +64,7 @@ pub fn base64_to_bin(base64: &str) -> Result<Vec<u8>> {
     return Ok(bin)
 }
 
-pub fn bin_to_base64(bin: &[u8]) -> String {
+pub fn encode(bin: &[u8]) -> String {
     let mut bytes: Vec<u8> = vec!();
     bytes.reserve_exact((bin.len() + 2) / 3 * 4);
     let (chunks, remainder) = bin.as_chunks::<3>();
@@ -106,12 +106,9 @@ mod tests {
             ("Many hands make light work!!", "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmshIQ=="),
             ("123!*%@$%#()_+", "MTIzISolQCQlIygpXys="),
         ] {
-            let encoded = bin_to_base64(input.as_bytes());
-            print!("{}\n", input);
-            print!("{}\n", encoded);
+            let encoded = encode(input.as_bytes());
             assert!(encoded == base64);
-            let decoded = base64_to_bin(&encoded).unwrap();
-            print!("{}\n", String::from_utf8(decoded.clone()).unwrap());
+            let decoded = decode(&encoded).unwrap();
             assert!(input.as_bytes() == decoded);
         }
     }
