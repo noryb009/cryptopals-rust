@@ -12,11 +12,14 @@ fn char_to_nibble(c: u8) -> Result<u8> {
 pub fn decode(hex: &str) -> Result<Vec<u8>> {
     let hex = hex.as_bytes();
     anyhow::ensure!(hex.len() % 2 == 0);
-    hex.chunks_exact(2).into_iter().map(|v| {
-        let v1 = char_to_nibble(v[0])?;
-        let v2 = char_to_nibble(v[1])?;
-        Ok((v1 << 4) | v2)
-    }).collect::<Result<Vec<u8>>>()
+    hex.chunks_exact(2)
+        .into_iter()
+        .map(|v| {
+            let v1 = char_to_nibble(v[0])?;
+            let v2 = char_to_nibble(v[1])?;
+            Ok((v1 << 4) | v2)
+        })
+        .collect::<Result<Vec<u8>>>()
 }
 
 pub fn nibble_to_char(c: u8) -> u8 {
@@ -29,9 +32,10 @@ pub fn nibble_to_char(c: u8) -> u8 {
 }
 
 pub fn encode(bin: &[u8]) -> String {
-    let bytes = bin.into_iter().flat_map(|b| {
-        [nibble_to_char(*b >> 4), nibble_to_char(*b)]
-    }).collect::<Vec<u8>>();
+    let bytes = bin
+        .into_iter()
+        .flat_map(|b| [nibble_to_char(*b >> 4), nibble_to_char(*b)])
+        .collect::<Vec<u8>>();
     String::from_utf8(bytes).unwrap()
 }
 

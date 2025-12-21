@@ -33,7 +33,7 @@ pub fn decode(base64: &str) -> Result<Vec<u8>> {
         }
     }
 
-    let mut bin: Vec<u8> = vec!();
+    let mut bin: Vec<u8> = vec![];
 
     let (chunks, remainder) = base64.as_chunks::<4>();
     bin.reserve_exact(chunks.len() * 3 + 3);
@@ -52,7 +52,10 @@ pub fn decode(base64: &str) -> Result<Vec<u8>> {
         let [a0, a1, a2, a3] = chrs;
         bin.extend(transform_values(a0?, a1?, a2?, a3?));
     }
-    let r: Result<Vec<_>, _> = remainder.into_iter().map(|c: &u8| decode_char(*c)).collect();
+    let r: Result<Vec<_>, _> = remainder
+        .into_iter()
+        .map(|c: &u8| decode_char(*c))
+        .collect();
     match r?[..] {
         [] => (),
         [_] => anyhow::bail!("Invalid base64 length"),
@@ -61,11 +64,11 @@ pub fn decode(base64: &str) -> Result<Vec<u8>> {
         _ => panic!("as_chunks remainder too large"),
     }
 
-    return Ok(bin)
+    return Ok(bin);
 }
 
 pub fn encode(bin: &[u8]) -> String {
-    let mut bytes: Vec<u8> = vec!();
+    let mut bytes: Vec<u8> = vec![];
     bytes.reserve_exact((bin.len() + 2) / 3 * 4);
     let (chunks, remainder) = bin.as_chunks::<3>();
 
@@ -79,17 +82,21 @@ pub fn encode(bin: &[u8]) -> String {
     }
 
     // Encode each chunk.
-    bytes.extend(chunks.into_iter().flat_map(|c| transform_bytes(c[0], c[1], c[2])));
+    bytes.extend(
+        chunks
+            .into_iter()
+            .flat_map(|c| transform_bytes(c[0], c[1], c[2])),
+    );
     match remainder[..] {
         [] => (),
         [c0] => {
             bytes.extend(&transform_bytes(c0, 0, 0)[0..=1]);
             bytes.extend([b'=', b'=']);
-        },
+        }
         [c0, c1] => {
             bytes.extend(&transform_bytes(c0, c1, 0)[0..=2]);
             bytes.extend([b'=']);
-        },
+        }
         _ => panic!("as_chunks remainder too large"),
     }
     String::from_utf8(bytes).unwrap()
@@ -102,8 +109,14 @@ mod tests {
     #[test]
     fn test_base64() {
         for (input, base64) in [
-            ("Many hands make light work.", "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu"),
-            ("Many hands make light work!!", "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmshIQ=="),
+            (
+                "Many hands make light work.",
+                "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu",
+            ),
+            (
+                "Many hands make light work!!",
+                "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmshIQ==",
+            ),
             ("123!*%@$%#()_+", "MTIzISolQCQlIygpXys="),
         ] {
             let encoded = encode(input.as_bytes());
