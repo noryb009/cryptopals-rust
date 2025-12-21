@@ -38,4 +38,22 @@ mod tests {
         assert_eq!(expected, output);
         //println!("{}", output);
     }
+
+    #[test]
+    fn test_challenge4() {
+        let content = std::fs::read_to_string("data/4.txt").unwrap();
+        let expected = "Now that the party is jumping\n";
+        let out_bytes = content
+            .split('\n')
+            .into_iter()
+            .filter(|x| x.len() > 0)
+            .map(|line| hex::decode(line).unwrap())
+            .flat_map(|input| (0..=255).map(move |x| xor::xor_byte(&input, x)))
+            .max_by_key(|s| english::score_english(&s))
+            .unwrap();
+
+        let output = String::from_utf8(out_bytes).unwrap();
+        assert_eq!(expected, output);
+        println!("{}", output);
+    }
 }
