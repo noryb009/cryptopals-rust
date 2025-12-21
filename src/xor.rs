@@ -10,6 +10,10 @@ pub fn xor_binary(a: &[u8], b: &[u8]) -> Result<Vec<u8>> {
         .collect::<Vec<u8>>())
 }
 
+pub fn xor_byte(a: &[u8], b: u8) -> Vec<u8> {
+    a.into_iter().map(|x| x ^ b).collect::<Vec<u8>>()
+}
+
 mod tests {
     use super::*;
 
@@ -19,6 +23,15 @@ mod tests {
         let in2 = hex::decode("124850fe").unwrap();
         let out = xor_binary(&in1, &in2).unwrap();
         let expected = "124d00ab";
+        assert_eq!(hex::encode(&out), expected);
+    }
+
+    #[test]
+    fn test_xor_byte() {
+        let in1 = hex::decode("010289ff").unwrap();
+        let in2 = 0x11;
+        let out = xor_byte(&in1, in2);
+        let expected = "101398ee";
         assert_eq!(hex::encode(&out), expected);
     }
 }

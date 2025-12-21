@@ -1,4 +1,5 @@
 use crate::base64;
+use crate::english;
 use crate::hex;
 use crate::xor;
 
@@ -22,5 +23,19 @@ mod tests {
         let out = xor::xor_binary(&hex::decode(in1).unwrap(), &hex::decode(in2).unwrap()).unwrap();
         assert_eq!(expected, hex::encode(&out));
         //println!("{}", String::from_utf8(out).unwrap());
+    }
+
+    #[test]
+    fn test_challenge3() {
+        let input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
+        let expected = "Cooking MC's like a pound of bacon";
+        let in_bytes = hex::decode(input).unwrap();
+        let out_bytes = (0..=255)
+            .map(|x| xor::xor_byte(&in_bytes, x))
+            .max_by_key(|s| english::score_english(&s))
+            .unwrap();
+        let output = String::from_utf8(out_bytes).unwrap();
+        assert_eq!(expected, output);
+        //println!("{}", output);
     }
 }
