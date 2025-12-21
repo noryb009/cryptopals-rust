@@ -14,6 +14,16 @@ pub fn xor_byte(a: &[u8], b: u8) -> Vec<u8> {
     a.into_iter().map(|x| x ^ b).collect::<Vec<u8>>()
 }
 
+pub fn xor_repeat(a: &[u8], b: &[u8]) -> Vec<u8> {
+    if a.len() < b.len() {
+        return xor_repeat(b, a);
+    }
+    a.into_iter()
+        .zip(b.into_iter().cycle())
+        .map(|(x, y)| x ^ y)
+        .collect::<Vec<u8>>()
+}
+
 mod tests {
     use super::*;
 
@@ -32,6 +42,15 @@ mod tests {
         let in2 = 0x11;
         let out = xor_byte(&in1, in2);
         let expected = "101398ee";
+        assert_eq!(hex::encode(&out), expected);
+    }
+
+    #[test]
+    fn test_xor_repeat() {
+        let in1 = hex::decode("01020304").unwrap();
+        let in2 = hex::decode("0102").unwrap();
+        let out = xor_repeat(&in1, &in2);
+        let expected = "00000206";
         assert_eq!(hex::encode(&out), expected);
     }
 }
