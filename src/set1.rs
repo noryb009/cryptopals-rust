@@ -43,14 +43,14 @@ mod tests {
     fn test_challenge4() {
         let content = std::fs::read_to_string("data/4.txt").unwrap();
         let expected = "Now that the party is jumping\n";
-        let out_bytes = content
+        let out_bytes = 
+            content
             .split('\n')
             .into_iter()
             .filter(|x| x.len() > 0)
             .map(|line| hex::decode(line).unwrap())
             .flat_map(|input| (0..=255).map(move |x| xor::xor_byte(&input, x)))
-            .max_by_key(|s| english::score_english(&s))
-            .unwrap();
+            .max_by_key(|s| english::score_english(&s)).unwrap();
 
         let output = String::from_utf8(out_bytes).unwrap();
         assert_eq!(expected, output);
@@ -70,17 +70,6 @@ mod tests {
 
     #[test]
     fn test_challenge6() {
-        let key = "ICE";
-        let input = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
-        let expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
-        let output_bytes = xor::xor_repeat(input.as_bytes(), key.as_bytes());
-        let output = hex::encode(&output_bytes);
-        //println!("{}", output);
-        assert_eq!(expected, output);
-    }
-
-    #[test]
-    fn test_challenge7() {
         {
             let in1 = "this is a test";
             let in2 = "wokka wokka!!!";
@@ -88,8 +77,46 @@ mod tests {
             let output = english::hamming_distance(in1.as_bytes(), in2.as_bytes()).unwrap();
             assert_eq!(expected, output);
         }
-        {
-            // TODO
-        }
+        let content = std::fs::read_to_string("data/6.txt").unwrap();
+        let content = content.replace("\n", "");
+        let content = base64::decode(&content).unwrap();
+        let normalized_dist_of_keysize = |keysize: usize| -> usize {
+            let process_chunks = |i: usize, j: usize| -> usize {
+                let c1_start = i * keysize;
+                let c2_start = j * keysize;
+                let c1 = &content[c1_start..c1_start + keysize];
+                let c2 = &content[c2_start..c2_start + keysize];
+                english::hamming_distance(c1, c2).unwrap()
+            };
+            let mut total_dist: usize = 0;
+            for i in 0..5 {
+                for j in (i + 1)..5 {
+                    total_dist += process_chunks(i, j);
+                }
+            }
+            return total_dist / keysize;
+        };
+        let keysize = (2..=40)
+            .min_by_key(|keysize| normalized_dist_of_keysize(*keysize))
+            .unwrap();
+        let key = (0..keysize)
+            .map(|idx: usize| {
+                let transpose = content
+                    .chunks(keysize)
+                    .flat_map(|chunk| chunk.get(idx))
+                    .map(|c: &u8| *c)
+                    .collect::<Vec<u8>>();
+                (0..=255)
+                    .map(move |x| (x, xor::xor_byte(&transpose, x)))
+                    .max_by_key(|(_, s)| english::score_english(&s))
+                    .unwrap()
+                    .0
+            })
+            .collect::<Vec<u8>>();
+        assert_eq!(
+            String::from_utf8(key.clone()).unwrap(),
+            "Terminator X: Bring the noise"
+        );
+        //println!("{}", String::from_utf8(xor::xor_repeat(&content, &key)).unwrap());
     }
 }
